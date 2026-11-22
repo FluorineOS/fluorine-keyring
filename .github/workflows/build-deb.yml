@@ -1,0 +1,45 @@
+name: Build deb
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    name: Build fluorine-keyring
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: debian:trixie
+    steps:
+      - name: Check out the package source
+        uses: actions/checkout@v4
+
+      - name: Install packaging tools
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            debhelper \
+            devscripts
+
+      - name: Build the package
+        run: dpkg-buildpackage -us -uc -b
+
+      # Match any version so a version bump does not break the workflow.
+      - name: Collect the package
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp -v ../*_*_all.deb dist/
+
+      - name: Upload the package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluorine-keyring-deb
+          path: dist/*.deb
+          if-no-files-found: error
