@@ -1,0 +1,17 @@
+Source: fluorine-keyring
+Section: misc
+Priority: optional
+Maintainer: gowthvm <gowthamgkofficial@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+
+Package: fluorine-keyring
+Architecture: all
+Depends: ${misc:Depends}
+Description: FluorineOS APT archive keyring and source configuration
+ This package installs the FluorineOS archive GPG keyring and APT source
+ definition for the official FluorineOS package repository.
+ .
+ - /usr/share/keyrings/fluorineos-archive-keyring.gpg
+ - /etc/apt/sources.list.d/fluorineos.sources

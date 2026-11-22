@@ -1,0 +1,6 @@
+Types: deb
+URIs: [https://fluorineos.github.io/apt-repo]
+Suites: trixie
+Components: main
+Architectures: amd64
+Signed-By: /usr/share/keyrings/fluorineos-archive-keyring.gpg
