@@ -1,0 +1,12 @@
+# Build artifacts
+*.deb
+*.changes
+*.buildinfo
+*.tar.*
+debian/.debhelper/
+debian/files
+debian/*.substvars
+debian/tmp/
+
+# Local and editor noise
+.DS_Store
