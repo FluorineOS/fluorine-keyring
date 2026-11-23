@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: build-deb-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-deb:
@@ -16,21 +21,55 @@ jobs:
     timeout-minutes: 20
     container:
       image: debian:trixie
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Check out the package source
         uses: actions/checkout@v4
 
+      # dpkg-checkbuilddeps refuses to run without build-essential, which was
+      # missing, so every run aborted before packaging anything.
       - name: Install packaging tools
         run: |
+          set -euo pipefail
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential \
             debhelper \
-            devscripts
+            dpkg-dev \
+            shellcheck
+
+      - name: Lint the shell scripts
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          scripts=(bin/* debian/postinst debian/preinst debian/prerm debian/postrm)
+          for script in "${scripts[@]}"; do
+            [ -f "${script}" ] || continue
+            shellcheck -x "${script}"
+            printf 'shellcheck clean: %s\n' "${script}"
+          done
+          if [ "${#scripts[@]}" -eq 0 ]; then
+            printf 'no shell scripts to lint\n'
+          fi
 
       - name: Build the package
         run: dpkg-buildpackage -us -uc -b
 
-      # Match any version so a version bump does not break the workflow.
+      - name: Inspect the built package
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          debs=(../*_*_all.deb)
+          if [ "${#debs[@]}" -ne 1 ]; then
+            printf 'expected one package, found %d\n' "${#debs[@]}" >&2
+            exit 1
+          fi
+          dpkg-deb -I "${debs[0]}"
+          dpkg-deb -c "${debs[0]}"
+          dpkg-deb --fsys-tarfile "${debs[0]}" | tar -t >/dev/null
+
       - name: Collect the package
         run: |
           set -euo pipefail
