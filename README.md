@@ -55,11 +55,13 @@ Requires `dpkg-dev` and `debhelper` on Debian 13 `amd64`.
 git clone https://github.com/FluorineOS/fluorine-keyring.git
 cd fluorine-keyring
 dpkg-buildpackage -us -uc -b
-dpkg-deb -c ../fluorine-keyring_0.0.1_all.deb
+dpkg-deb -c ../fluorine-keyring_0.0.2_all.deb
 ```
 
 The built `.deb` is written to the parent directory.
 
 ## License
+
+Released under the MIT License. See [LICENSE](LICENSE) for the full text.
 
 Source: [FluorineOS/fluorine-keyring](https://github.com/FluorineOS/fluorine-keyring)
